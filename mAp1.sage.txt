@@ -1,0 +1,101 @@
+# Implement mAp1
+
+def mAp1(perm, mpatt):
+    isInside = false
+    patt = mpatt[0]
+    areas = mpatt[1]
+    m = len(patt)
+    p_inv = [0]*m	# initialize list with all zeros with length m
+    n = 1
+    for v in patt:		# permutation inverse: t.d 231 -> 312, 1:í index 3, 2: í index 1, 3: í index 2
+        p_inv[v-1] = n
+        n+=1
+
+    for subPerm in Subwords(perm, m):
+        nm = subPerm[p_inv[0]-1]		#perm[3-1=2] = 3	list of all perm of size 3: 25(3), …	(checking relative order)
+        for p in p_inv[1:]:		#p = 1, n = perm[0] = 2 ——- nm < n: false: break
+            n = subPerm[p-1]
+            if nm < n:
+                nm = n
+            else:
+                break
+        else:
+            sortedPat = list(subPerm)
+            sortedPat.sort()
+
+            for a in areas: # loop through eash mesh square
+                for i in range(1,len(patt)+1):
+                    if a[0] == 0: #special case first
+                        xmin = 0
+                        xmax = perm.index(subPerm[0]) + 1
+                    if a[0] == len(patt): #special case last
+                        xmin = perm.index(subPerm[len(subPerm)-1]) + 1
+                        xmax = len(perm) + 1
+                        break
+                    if a[0] == i: # loop to find the x (x , something)
+                        xmax = perm.index(subPerm[i])+1
+                        xmin = perm.index(subPerm[i-1])+1
+                        break
+                for cp in perm[xmin:xmax-1]: #loop through all points on the x-axis that satisfy: cp>xmin and cp<xmax
+                    if a[1] == 0: #special case first
+                        ymin = 0
+                        ymax = min(subPerm)
+                        if (cp > ymin and cp < ymax): # if cp is within a mesh square i can break and stop looking at that subPattern
+                            isInside = true
+                            break
+                        else:
+                            break
+                    if a[1] == len(patt): #special case last
+                        ymin = max(subPerm)
+                        ymax = len(perm)+1
+                        if (cp > ymin and cp < ymax):
+                            isInside = true
+                            break
+                        else:
+                            break
+                    for j in range(1,len(patt)):
+                        if a[1] == j:
+                            ymin = sortedPat[j-1]
+                            ymax = sortedPat[j]
+                            if (cp > ymin and cp < ymax):
+                                isInside = true
+                                break
+                            else:
+                                break
+                    if(isInside == true):
+                        break
+                if(isInside == true):
+                        break
+            if(isInside == false):
+                return true
+            else:
+                isInside = false
+
+    return false
+
+# Start of testcases (you need to comment them in)
+
+# Testcase 1
+perm  = Permutation([1,3,6,4,5,2])
+mpatt = (Permutation([2,3,1]), [(1,0), (1,1), (1,2)])
+mAp1(perm, mpatt) == True
+
+# Testcase 2
+perm  = Permutation([5, 6, 7, 1, 3, 2, 4])
+mpatt = (Permutation([2,3,1]), [(1, 2), (3, 2), (0, 0), (3, 3), (3, 0), (2, 1), (1, 1), (2, 0), (1, 3), (2, 3), (0, 3), (0, 2)])
+mAp1(perm, mpatt) == True
+
+# Testcase 3
+perm  = Permutation([7, 4, 2, 6, 1, 5, 3])
+mpatt = (Permutation([2,3,1]), [(1, 2), (3, 2), (0, 0), (3, 3), (3, 0), (2, 1), (1, 1), (2, 0), (1, 3), (2, 3), (0, 3), (0, 2)])
+mAp1(perm, mpatt) == False
+
+# Testcase 4
+perm  = Permutation([28, 25, 29, 13, 14, 8, 17, 21, 19, 4, 20, 12, 3, 22, 11, 2, 27, 10, 30, 23, 5, 1, 9, 16, 15, 26, 24, 7, 6, 18])
+mpatt = (Permutation([1, 5, 4, 3, 2,]), [(3, 0), (3, 1), (2, 1), (1, 5), (4, 5), (0, 3), (0, 2), (5, 3)])
+mAp1(perm, mpatt) == False
+
+# Testcase 5
+perm  = Permutation([9, 40, 14, 39, 15, 18, 6, 30, 38, 28, 16, 8, 23, 19, 31, 24, 20, 10, 26, 17, 1, 13, 27, 3, 34, 21, 2, 37, 12, 29, 11, 5, 25, 35, 33, 32, 36, 7, 22, 4])
+mpatt = (Permutation([2, 3, 6, 5, 1, 7, 4]), [(7, 7), (7, 3), (4, 7), (2, 6), (1, 5), (4, 5), (6, 6), (7, 4), (1, 4), (0, 2), (6, 3), (0, 6), (7, 5), (5, 6), (1, 0), (5, 2), (0, 3), (4, 0)])
+mAp1(perm, mpatt) == True
